@@ -31,7 +31,6 @@ class AutoDisplayAdmin(admin.ModelAdmin):
         admin.ModelAdmin.__init__(self, *args, **kwargs)
         self.list_display = []
         self.list_display_links = []
-        print args
         for field in args[0]._meta.fields:
             if field.get_internal_type() in self.list_display_fields:
                 self.list_display.append(field.name)
@@ -45,8 +44,6 @@ def auto_register(*app_list):
         try:
             app_models = get_app(app_name)
         except ImproperlyConfigured:
-            print "Application {app_name} could not be automatically registered to admin, as it could not be found. " \
-                  "Skipping...".format(app_name=app_name)
             continue
         for model in get_models(app_models):
             try:
