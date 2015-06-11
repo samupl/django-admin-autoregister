@@ -1,9 +1,6 @@
+from django.apps import AppConfig
 from django.contrib import admin
-from django.core.exceptions import ImproperlyConfigured
-from django.db.models import get_models, get_app
-from django.contrib import admin
-from django.contrib.admin.sites import AlreadyRegistered
-from django.conf import settings
+from django.db import models
 
 
 class AutoDisplayAdmin(admin.ModelAdmin):
@@ -38,19 +35,16 @@ class AutoDisplayAdmin(admin.ModelAdmin):
                 self.list_display_links.append(field.name)
 
 
+class DjangoAutoRegisterConfig(AppConfig):
 
-def auto_register(*app_list):
-    for app_name in app_list:
-        try:
-            app_models = get_app(app_name)
-        except ImproperlyConfigured:
-            continue
-        for model in get_models(app_models):
-            try:
-                admin.site.register(model, AutoDisplayAdmin)
-            except AlreadyRegistered:
-                pass
+    name = 'django_autoregister'
+    verbose_name = 'Django model auto registration plugin'
 
+    def ready(self):
+        all_models = models.get_models()
+        registered_models = admin.site._registry
 
-app_list = [app for app in settings.INSTALLED_APPS]
-auto_register(*app_list)
+        for model in all_models:
+            if model in registered_models:
+                continue
+            admin.site.register(model, AutoDisplayAdmin)
